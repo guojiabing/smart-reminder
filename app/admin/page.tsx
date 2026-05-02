@@ -1,12 +1,48 @@
 "use client";
 
 import { useState } from "react";
+import useSWR from "swr";
 import { useAdminStats } from "@/hooks/use-admin-stats";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, RefreshCw, Settings2, Users } from "lucide-react";
+import { BarChart3, RefreshCw, Settings2, Users, CheckCircle2 } from "lucide-react";
 import { NudgeTone, ToneWeights } from "@/lib/types";
+import { PromptEditor } from "@/components/admin/prompt-editor";
+import { ChurnAlertPanel } from "@/components/admin/churn-alert-panel";
+
+interface PromptTemplate {
+  id: string;
+  name: string;
+  tone: string;
+  systemPrompt: string;
+  fewShotExamples: string[];
+  isActive: boolean;
+  updatedAt: string;
+}
+
+interface ChurnAlert {
+  userId: string;
+  userName: string;
+  daysInactive: number;
+  lastActiveAt: string;
+  parentNotified: boolean;
+  notifiedAt?: string;
+}
+
+const promptsFetcher = async (url: string): Promise<PromptTemplate[]> => {
+  const res = await fetch(url);
+  const json = await res.json();
+  if (!json.success) return [];
+  return (json.data.templates ?? []) as PromptTemplate[];
+};
+
+const churnFetcher = async (url: string): Promise<ChurnAlert[]> => {
+  const res = await fetch(url);
+  const json = await res.json();
+  if (!json.success) return [];
+  return (json.data.alerts ?? []) as ChurnAlert[];
+};
 
 const toneColors: Record<string, string> = {
   empathetic: "bg-blue-500",
@@ -24,6 +60,33 @@ export default function AdminDashboard() {
   const { data, isLoading, mutate } = useAdminStats();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const {
+    data: templates,
+    mutate: mutatePrompts,
+  } = useSWR<PromptTemplate[]>("/api/admin/prompts", promptsFetcher);
+  const {
+    data: churnAlerts,
+    mutate: mutateChurn,
+  } = useSWR<ChurnAlert[]>("/api/admin/churn-alert", churnFetcher);
+
+  const handleSavePrompt = async (id: string, systemPrompt: string) => {
+    await fetch("/api/admin/prompts", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, systemPrompt }),
+    });
+    await mutatePrompts();
+  };
+
+  const handleNotifyParent = async (userId: string) => {
+    await fetch("/api/admin/churn-alert", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId }),
+    });
+    await mutateChurn();
+  };
   
   // Local state for weights before saving
   const [localWeights, setLocalWeights] = useState<ToneWeights | null>(null);
@@ -198,10 +261,30 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
+        {/* Row 3: Prompt Template Management + Churn Alert */}
+        <div className="grid gap-8 md:grid-cols-2">
+          <Card>
+            <CardContent className="pt-6">
+              {templates ? (
+                <PromptEditor templates={templates} onSave={handleSavePrompt} />
+              ) : (
+                <div className="h-64 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-800" />
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <ChurnAlertPanel
+                alerts={churnAlerts ?? []}
+                onNotifyParent={handleNotifyParent}
+                onRefresh={() => mutateChurn()}
+              />
+            </CardContent>
+          </Card>
+        </div>
+
       </main>
     </div>
   );
 }
-
-// Needed because we use CheckCircle2 in this file but didn't import it at the top
-import { CheckCircle2 } from "lucide-react";

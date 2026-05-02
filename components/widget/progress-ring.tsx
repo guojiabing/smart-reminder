@@ -41,7 +41,7 @@ export function ProgressRing({ progress, size = 64, strokeWidth = 6 }: ProgressR
           transition={{ duration: 1, ease: "easeOut" }}
         />
       </svg>
-      <div className="absolute flex flex-col items-center justify-center text-xs font-bold">
+      <div className="absolute flex flex-col items-center justify-center text-[10px] font-bold">
         {Math.round(progress)}%
       </div>
     </div>

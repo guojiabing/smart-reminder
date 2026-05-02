@@ -7,6 +7,13 @@ export const UserSchema = z.object({
   segment: z.enum(["active", "passive", "at-risk"]),
   streakDays: z.number().int().min(0),
   lastActiveAt: z.string(), // ISO date string
+  preferredReminderTime: z.string().optional(), // "HH:mm", for passive users
+  deskMateName: z.string().optional(), // for social leverage
+  deskMateId: z.string().optional(), // linked user id
+  isOnline: z.boolean().default(false),
+  teamMateIds: z.array(z.string()).default([]),
+  rankLevel: z.number().int().default(1),
+  rankTitle: z.string().default("学习新手"),
 });
 
 export type User = z.infer<typeof UserSchema>;
@@ -31,6 +38,8 @@ export const NudgeCopySchema = z.object({
   targetSegment: z.enum(["active", "passive", "at-risk", "all"]),
   template: z.string(), // e.g., "太棒了！今天只差 {task_name} 啦！"
   createdAt: z.string(),
+  baseScore: z.number().min(0).max(10).optional(), // 0-10, AI evaluation score
+  tags: z.array(z.string()).optional(), // e.g. ["urgent", "social", "night-owl"]
 });
 
 export type NudgeCopy = z.infer<typeof NudgeCopySchema>;

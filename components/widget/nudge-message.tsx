@@ -5,11 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function NudgeMessage({ message, onStart }: { message: string | null; onStart: () => void }) {
+export function NudgeMessage({ message, onStart, taskTitle }: { message: string | null; onStart?: () => void; taskTitle?: string }) {
   const [displayedText, setDisplayedText] = useState("");
-  
-  // Typewriter effect using simple timeout (safe alternative to useEffect)
-  // Actually, we use framer-motion stagger for a better declarative effect, avoiding useEffect
   
   if (!message) return null;
 
@@ -25,19 +22,21 @@ export function NudgeMessage({ message, onStart }: { message: string | null; onS
         </motion.p>
       </div>
       
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.3 }}
-      >
-        <Button 
-          onClick={onStart}
-          className="w-full gap-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20"
+      {onStart && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3 }}
         >
-          <PlayCircle className="h-4 w-4" />
-          一键开始
-        </Button>
-      </motion.div>
+          <Button 
+            onClick={onStart}
+            className="w-full gap-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20"
+          >
+            <PlayCircle className="h-4 w-4" />
+            {taskTitle ? `开始任务：${taskTitle}` : "一键开始"}
+          </Button>
+        </motion.div>
+      )}
     </div>
   );
 }

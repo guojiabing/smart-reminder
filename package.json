@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "vitest run",
+    "type-check": "tsc --noEmit",
+    "lint": "next lint"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -13,6 +16,7 @@
     "immer": "^11.1.4",
     "lucide-react": "^1.14.0",
     "next": "16.2.4",
+    "openai": "^6.35.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "swr": "^2.4.1",
@@ -25,7 +29,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/ui": "^4.1.5",
+    "happy-dom": "^20.9.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.5"
   }
 }

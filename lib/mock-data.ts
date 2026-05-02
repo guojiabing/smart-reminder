@@ -7,6 +7,13 @@ export const MOCK_USERS: User[] = [
     segment: "passive",
     streakDays: 4,
     lastActiveAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    preferredReminderTime: "17:00",
+    deskMateName: "张博",
+    deskMateId: "user-active-1",
+    isOnline: true,
+    teamMateIds: ["user-active-1"],
+    rankLevel: 5,
+    rankTitle: "中坚力量",
   },
   {
     id: "user-active-1",
@@ -14,6 +21,12 @@ export const MOCK_USERS: User[] = [
     segment: "active",
     streakDays: 42,
     lastActiveAt: new Date().toISOString(),
+    deskMateName: "林晓",
+    deskMateId: "user-passive-1",
+    isOnline: true,
+    teamMateIds: ["user-passive-1"],
+    rankLevel: 12,
+    rankTitle: "学神附体",
   },
   {
     id: "user-risk-1",
@@ -21,6 +34,12 @@ export const MOCK_USERS: User[] = [
     segment: "at-risk",
     streakDays: 0,
     lastActiveAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    deskMateName: "张博",
+    deskMateId: "user-active-1",
+    isOnline: false,
+    teamMateIds: ["user-active-1"],
+    rankLevel: 1,
+    rankTitle: "暂露头角",
   },
 ];
 
@@ -61,6 +80,16 @@ export const MOCK_TASKS: Record<string, Task[]> = {
       dueDate: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
     },
   ],
+  "user-risk-1": [
+    {
+      id: "task-5",
+      title: "单词打卡",
+      course: "英语",
+      durationMinutes: 5,
+      status: "pending",
+      dueDate: new Date().toISOString(),
+    }
+  ]
 };
 
 export const FALLBACK_COPIES: NudgeCopy[] = [
@@ -68,22 +97,37 @@ export const FALLBACK_COPIES: NudgeCopy[] = [
     id: "fb-emp-1",
     tone: "empathetic",
     targetSegment: "passive",
-    template: "{user_name}，今天只差最后 {task_duration} 分钟的 {task_name} 啦，做完就能安心休息咯~",
+    template: "{user_name}同学，你的{task_name}任务还差一点就完成啦，现在开始 5 分钟就能搞定！",
     createdAt: new Date().toISOString(),
+    baseScore: 8.5,
+    tags: ["efficient", "gentle"],
   },
   {
     id: "fb-mot-1",
     tone: "motivational",
     targetSegment: "active",
-    template: "哇！你是今天全站前 5% 的效率大师！继续保持连胜！",
+    template: "完成今日{task_name}，保持你 {streak} 天的连胜记录！你是最棒的！",
     createdAt: new Date().toISOString(),
+    baseScore: 9.0,
+    tags: ["streak", "honor"],
   },
   {
     id: "fb-hum-1",
     tone: "humorous",
     targetSegment: "at-risk",
-    template: "呼叫 {user_name}！你的学习进度正在抗议，快来消灭 {task_name}！",
+    template: "呼叫 {user_name}！完成本次{task_name}即可领取“连续学习奖励”刺激包哦！🎁",
     createdAt: new Date().toISOString(),
+    baseScore: 7.5,
+    tags: ["reward", "fun"],
+  },
+  {
+    id: "fb-soc-1",
+    tone: "humorous",
+    targetSegment: "at-risk",
+    template: "和你一起学习的 {buddy_name} 已经完成了今天的任务，就差你啦！快来追上他！🚀",
+    createdAt: new Date().toISOString(),
+    baseScore: 9.5,
+    tags: ["social", "competitive"],
   },
 ];
 
