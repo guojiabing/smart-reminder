@@ -10,6 +10,7 @@ import { BarChart3, RefreshCw, Settings2, Users, CheckCircle2 } from "lucide-rea
 import { NudgeTone, ToneWeights } from "@/lib/types";
 import { PromptEditor } from "@/components/admin/prompt-editor";
 import { ChurnAlertPanel } from "@/components/admin/churn-alert-panel";
+import { ExperimentPanel } from "@/components/admin/experiment-panel";
 
 interface PromptTemplate {
   id: string;
@@ -283,6 +284,9 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Row 4: A/B Experiment Panel */}
+        <ExperimentPanel />
 
       </main>
     </div>
