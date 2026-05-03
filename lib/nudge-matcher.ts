@@ -9,6 +9,12 @@ export interface NudgeResult {
   tone?: string;
 }
 
+export interface FatigueOptions {
+  fatigueScore?: number;
+  fatigueThresholdHigh?: number;
+  fatigueThresholdMedium?: number;
+}
+
 export function matchNudgeForUser(
   user: User,
   tasks: Task[],
@@ -16,6 +22,7 @@ export function matchNudgeForUser(
   allUsers: User[],
   mockHour?: number,
   mockMinute?: number,
+  fatigue?: FatigueOptions,
 ): NudgeResult {
   const pendingTasks = tasks.filter((t) => t.status !== "completed");
 
@@ -37,6 +44,20 @@ export function matchNudgeForUser(
   const freqCheck = nudgeGovernor.isAllowed(user.id, "standard_nudge");
   if (!freqCheck.allowed) {
     return { message: "正在专注学习中，我会静静陪伴你...", isAppropriateTime: false, reason: freqCheck.reason };
+  }
+
+  if (fatigue?.fatigueScore !== undefined) {
+    const highThreshold = fatigue.fatigueThresholdHigh ?? 70;
+    const medThreshold = fatigue.fatigueThresholdMedium ?? 40;
+    if (fatigue.fatigueScore >= highThreshold) {
+      return { message: "检测到你可能有些疲惫，先休息一下吧，我稍后再来陪你~", isAppropriateTime: false, reason: "fatigue_high" };
+    }
+    if (fatigue.fatigueScore >= medThreshold) {
+      copies = copies.filter((c) => (c.baseScore || 5) >= 7);
+      if (copies.length === 0) {
+        return { message: "今天辛苦了，只推荐最适合你的内容~", isAppropriateTime: true };
+      }
+    }
   }
 
   let isAppropriateTime = false;

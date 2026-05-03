@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { matchNudgeForUser } from "@/lib/nudge-matcher";
 import { getActiveExperiments, getOrCreateAssignment } from "@/lib/experiment";
+import { getUserFatigue } from "@/lib/fatigue";
+import { getFrequencyConfig } from "@/lib/frequency-config";
 import type { User, NudgeCopy } from "@/lib/types";
 
 function toAppUser(dbUser: { id: string; name: string; avatar: string | null; segment: string; streakDays: number; lastActiveAt: Date; preferredReminderTime: string | null; deskMateName: string | null; deskMateId: string | null; isOnline: boolean; teamMateIds: string | null; rankLevel: number; rankTitle: string }): User {
@@ -51,7 +53,17 @@ export async function GET(request: Request) {
   const copies = dbCopies.map(toAppCopy);
 
   const tasks = dbTasks.map((t) => ({ ...t, status: t.status as "pending" | "in-progress" | "completed" }));
-  const result = matchNudgeForUser(user, tasks, copies, allUsers, mockHour, mockMinute);
+
+  const [fatigueResult, freqConfig] = await Promise.all([
+    getUserFatigue(userId, mockHour),
+    getFrequencyConfig(),
+  ]);
+
+  const result = matchNudgeForUser(user, tasks, copies, allUsers, mockHour, mockMinute, {
+    fatigueScore: fatigueResult.score,
+    fatigueThresholdHigh: freqConfig.fatigueThresholdHigh,
+    fatigueThresholdMedium: freqConfig.fatigueThresholdMedium,
+  });
 
   let experimentId: string | undefined;
   let variantId: string | undefined;
@@ -68,5 +80,11 @@ export async function GET(request: Request) {
     // experiment assignment failure should not block nudge delivery
   }
 
-  return NextResponse.json({ ...result, experimentId, variantId });
+  return NextResponse.json({
+    ...result,
+    experimentId,
+    variantId,
+    fatigueScore: fatigueResult.score,
+    fatigueLevel: fatigueResult.level,
+  });
 }

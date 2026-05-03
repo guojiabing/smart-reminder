@@ -89,9 +89,9 @@ async function main() {
 
   // Seed initial NudgeLog entries for admin stats demo
   const LOG_SEEDS = [
-    { tone: "empathetic", viewed: 120, clicked: 22 },
-    { tone: "motivational", viewed: 80, clicked: 4 },
-    { tone: "humorous", viewed: 40, clicked: 3 },
+    { tone: "empathetic", viewed: 120, clicked: 22, dismissed: 15, completed: 8 },
+    { tone: "motivational", viewed: 80, clicked: 4, dismissed: 8, completed: 3 },
+    { tone: "humorous", viewed: 40, clicked: 3, dismissed: 12, completed: 2 },
   ];
 
   const userIds = ["user-passive-1", "user-active-1", "user-risk-1"];
@@ -109,6 +109,16 @@ async function main() {
       const ts = new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000);
       await prisma.nudgeLog.create({ data: { userId, copyId, tone: seed.tone, action: "nudge_clicked", timestamp: ts } });
     }
+    for (let i = 0; i < seed.dismissed; i++) {
+      const userId = userIds[i % userIds.length];
+      const ts = new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000);
+      await prisma.nudgeLog.create({ data: { userId, copyId, tone: seed.tone, action: "dismissed", timestamp: ts } });
+    }
+    for (let i = 0; i < seed.completed; i++) {
+      const userId = userIds[i % userIds.length];
+      const ts = new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000);
+      await prisma.nudgeLog.create({ data: { userId, copyId, tone: seed.tone, action: "task_completed", timestamp: ts } });
+    }
   }
 
   // Seed a default tone experiment
@@ -125,6 +135,21 @@ async function main() {
         { id: "balanced", name: "均衡分配" },
         { id: "humorous_heavy", name: "幽默优先" },
       ]),
+    },
+  });
+
+  await prisma.systemConfig.upsert({
+    where: { key: "frequency_config" },
+    update: {},
+    create: {
+      key: "frequency_config",
+      value: JSON.stringify({
+        globalCoolingMinutes: 15,
+        typeCoolingMinutes: 60,
+        maxDailyNudges: 5,
+        fatigueThresholdHigh: 70,
+        fatigueThresholdMedium: 40,
+      }),
     },
   });
 

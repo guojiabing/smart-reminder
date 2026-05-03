@@ -98,3 +98,9 @@ model ExperimentAssignment {
   @@unique([userId, experimentId])
   @@index([experimentId, variantId])
 }
+
+model SystemConfig {
+  key       String   @id
+  value     String
+  updatedAt DateTime @default(now()) @updatedAt
+}

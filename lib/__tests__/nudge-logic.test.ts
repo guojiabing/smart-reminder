@@ -64,4 +64,35 @@ describe("Nudge Logic & Scoring Engine", () => {
     expect(result.isAppropriateTime).toBe(false);
     expect(result.message).toContain("处理任务");
   });
+
+  it("should suppress nudge when fatigue is high (>=70)", () => {
+    const result = matchNudgeForUser(user, tasks, copies, allUsers, 16, 55, {
+      fatigueScore: 85,
+      fatigueThresholdHigh: 70,
+      fatigueThresholdMedium: 40,
+    });
+    expect(result.isAppropriateTime).toBe(false);
+    expect(result.reason).toBe("fatigue_high");
+    expect(result.message).toContain("休息");
+  });
+
+  it("should still produce a result at medium fatigue (40-70) but filter low-quality copies", () => {
+    const result = matchNudgeForUser(user, tasks, copies, allUsers, 16, 55, {
+      fatigueScore: 55,
+      fatigueThresholdHigh: 70,
+      fatigueThresholdMedium: 40,
+    });
+    expect(result.isAppropriateTime).toBe(true);
+    expect(result.message).toBeTruthy();
+  });
+
+  it("should behave normally at low fatigue (<40)", () => {
+    const result = matchNudgeForUser(user, tasks, copies, allUsers, 16, 55, {
+      fatigueScore: 20,
+      fatigueThresholdHigh: 70,
+      fatigueThresholdMedium: 40,
+    });
+    expect(result.isAppropriateTime).toBe(true);
+    expect(result.message).toContain("林晓");
+  });
 });
