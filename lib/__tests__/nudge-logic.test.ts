@@ -1,8 +1,8 @@
-/** @vitest-environment happy-dom */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { matchNudgeForUser } from "../nudge-matcher";
 import { nudgeGovernor } from "../nudge-governor";
 import { MOCK_USERS } from "../mock-data";
+import { storageAdapter } from "../storage-adapter";
 
 describe("Nudge Logic & Scoring Engine", () => {
   const user = MOCK_USERS[0]; // passive user
@@ -18,8 +18,13 @@ describe("Nudge Logic & Scoring Engine", () => {
   ];
 
   beforeEach(() => {
-    localStorage.clear();
     vi.useFakeTimers();
+    storageAdapter.clearAll();
+    nudgeGovernor.clearHistory(user.id);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("should match an empathetic nudge for a passive user at appropriate time", () => {
